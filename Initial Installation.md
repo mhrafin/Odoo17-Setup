@@ -26,6 +26,7 @@ sudo useradd -m -d /opt/odoo17 -U -r -s /bin/bash odoo17
 ```
 
 Here,
+
 `-m`: Creates the user's home directory if it doesn't exist
 
 `-d /opt/odoo17`: Sets the home directory path to `/opt/odoo17` (non-standard location)
@@ -55,6 +56,7 @@ sudo su - postgres -c "createuser -s odoo17"
 ```
 
 Here,
+
 `su -` switches to another user with a login shell environment
 `postgres` is the target user, which is the PostgreSQL system user.
 
