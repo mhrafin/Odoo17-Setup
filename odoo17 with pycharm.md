@@ -68,7 +68,7 @@ exit
 
 # Clone odoo17 repo
 
-This command is downloading the latest code from the Odoo version 17.0 branch, without its commit history, and placing it in the `/opt/odoo17/odoo` directory on your system.
+This command is downloading the latest code from the Odoo version 17.0 branch, without its commit history, and placing it in the `~/odoodevelopment/17.0/` directory on your system.
 
 ```
 git clone https://www.github.com/odoo/odoo --depth 1 --branch 17.0 ~/odoodevelopment/17.0/
@@ -193,6 +193,10 @@ Now that pycharm is install in your linux system. Lets Continue,
 
 Open the "~/odoodevelopment/17.0/" folder on pycharm.
 Here ~ means your user's home directory, usually its `/home/your_user_name/`.
+You can find your user name with this,
+```
+whoami
+```
 
 ## Set python interpreter
 
@@ -205,7 +209,7 @@ After opening the 17.0 folder on pycharm, if it doesn't detect interpreter speci
 - On Script parameters field add the conf you created earlier. Like this, `-c /path/to/your/conf/file.conf` . Those who followed the instructions copy paste this,
 
 ```
--c ~/odoodevelopment/17.0/odoo.conf
+-c /home/your_user_name/odoodevelopment/17.0/odoo.conf
 ```
 
 - Set the working directory to `~/odoodevelopment/17.0/`
