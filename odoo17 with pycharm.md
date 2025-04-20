@@ -7,7 +7,7 @@ sudo apt update && sudo apt upgrade -y
 # Install Necessary Packages
 
 ```
-sudo apt install postgresql postgresql-server-dev-all build-essential python3-pillow python3-lxml python3-dev python3-pip python3-setuptools npm nodejs git libldap2-dev libsasl2-dev libxml2-dev python3-wheel python3-venv libxslt1-dev node-less libjpeg-dev libssl-dev libffi-dev fontconfig libxrender1 xfonts-75dpi xfonts-base openpyxl -y
+sudo apt install postgresql postgresql-server-dev-all build-essential python3-pillow python3-lxml python3-dev python3-pip python3-setuptools npm nodejs git libldap2-dev libsasl2-dev libxml2-dev python3-wheel python3-venv libxslt1-dev node-less libjpeg-dev libssl-dev libffi-dev fontconfig libxrender1 xfonts-75dpi xfonts-base -y
 ```
 
 # Downloading wkhtmltopdf .deb file
@@ -98,6 +98,12 @@ source odoo17-venv/bin/activate
 
 ```
 pip3 install wheel
+```
+
+### Install openpyxl
+
+```
+pip3 install openpyxl
 ```
 
 ### Install Odoo's requirements
