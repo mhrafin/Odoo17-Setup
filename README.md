@@ -1,4 +1,3 @@
-# Odoo17 Installation Setup on Ubuntu 24.04 for Development.
-This installation process is specificly for development setup only.
+# Odoo 17 Development Environment Setup
 
-Feel free to contribute to this if i have missed anything.
+This repository contains step-by-step instructions to set up an Odoo 17 development environment on Ubuntu (24.04).
