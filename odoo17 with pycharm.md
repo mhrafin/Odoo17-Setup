@@ -153,13 +153,17 @@ mkdir ~/odoodevelopment/17.0/myapps
 # Edit pg_hba.conf
 
 To locate where this pg_hba.conf file is, use this 
-```
-locate pg_hba.conf
-```
 To use 'locate' command you need to install plocate, 
+
 ```
 sudo apt install plocate -y
 ```
+
+```
+locate pg_hba.conf
+```
+
+
 
 - Copy the first location. It probably looks like this, `/etc/postgresql/16/main/pg_hba.conf`
 
