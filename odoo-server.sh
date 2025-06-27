@@ -1,8 +1,12 @@
 #!/bin/bash
 
 # Variables
+OC_USER="odoo17"
+ODOO_THROUGH_DOMAIN="True"
 YOURWEBSITE="rafdev.xyz"
 
+# Its better if you update and upgrade your system before running this script, 
+# so that you can make sure you are running the up-to-date kernel version.
 # Updating Ubuntu and Installing the First Set of Required Packages
 sudo apt update
 sudo apt upgrade -y
@@ -13,35 +17,36 @@ sudo apt install postgresql postgresql-client build-essential python3-pillow pyt
 sudo npm install -g rtlcss
 
 # Creating a System User
-sudo useradd -m -d /opt/odoo17 -U -r -s /bin/bash odoo17
+sudo useradd -m -d /opt/$OC_USER -U -r -s /bin/bash $OC_USER
 
 # Configuring PostgreSQL
-sudo su - postgres -c "createuser -s odoo17"
+sudo su - postgres -c "createuser -s $OC_USER"
 
 # Installing Wkhtmltopdf
 wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
 
-sudo apt install ./wkhtmltox_0.12.6.1-3.jammy_amd64.deb -y
+sudo mv ~/wkhtmltox_0.12.6.1-3.jammy_amd64.deb /tmp/
+sudo apt install /tmp/wkhtmltox_0.12.6.1-3.jammy_amd64.deb -y
 
 
 # Downloading, Installing, and Configuring Odoo 17 in a Virtual Environment
-sudo -u odoo17 -H git clone https://www.github.com/odoo/odoo --depth 1 --branch 17.0 /opt/odoo17/odoo
-sudo -u odoo17 -H python3 -m venv /opt/odoo17/odoo-venv
+sudo -u $OC_USER -H git clone https://www.github.com/odoo/odoo --depth 1 --branch 17.0 /opt/$OC_USER/odoo
+sudo -u $OC_USER -H python3 -m venv /opt/$OC_USER/odoo-venv
 
 # Install the Required Odoo Python dependencies
-sudo -u odoo17 -H /opt/odoo17/odoo-venv/bin/pip install wheel
-sudo -u odoo17 -H /opt/odoo17/odoo-venv/bin/pip install -r /opt/odoo17/odoo/requirements.txt
+sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install wheel
+sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install -r /opt/$OC_USER/odoo/requirements.txt
 
 # Creating a configuration file for our Odoo installation
-sudo tee /etc/odoo17.conf > /dev/null <<EOF
+sudo tee /etc/$OC_USER.conf > /dev/null <<EOF
 [options]
 ; Specify the password that allows database management:
 admin_passwd = scrpass
 db_host = False
 db_port = False
-db_user = odoo17
+db_user = $OC_USER
 db_password = False
-addons_path = /opt/odoo17/odoo/addons
+addons_path = /opt/$OC_USER/odoo/addons
 ; This is the default port. It is specified here as you will want to set this if you are running Odoo on an alternate port.
 xmlrpc_port = 8069
 ; This is the default longpolling port. Like the xmlrpc_port we are specifying this port for completeness
@@ -53,20 +58,22 @@ workers = 2
 EOF
 
 # Creating a Systemd unit file to auto-start Odoo when the server reboots
-sudo tee /etc/systemd/system/odoo17.service > /dev/null <<EOF
+sudo tee /etc/systemd/system/$OC_USER.service > /dev/null <<EOF
 [Unit]
-Description=Odoo17
+Description=$OC_USER
 Requires=postgresql.service
 After=network.target postgresql.service
 
 [Service]
 Type=simple
-SyslogIdentifier=odoo17
+SyslogIdentifier=$OC_USER
 PermissionsStartOnly=true
-User=odoo17
-Group=odoo17
-ExecStart=/opt/odoo17/odoo-venv/bin/python3 /opt/odoo17/odoo/odoo-bin -c /etc/odoo17.conf
+User=$OC_USER
+Group=$OC_USER
+ExecStart=/opt/$OC_USER/odoo-venv/bin/python3 /opt/$OC_USER/odoo/odoo-bin -c /etc/$OC_USER.conf
 StandardOutput=journal+console
+Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
@@ -74,11 +81,18 @@ EOF
 
 sudo systemctl daemon-reload
 
-sudo systemctl enable --now odoo17
+sudo systemctl enable --now $OC_USER.service
 
-sudo systemctl status odoo17 --no-pager
+sudo systemctl status $OC_USER.service --no-pager
 
 ###############################################################################################################################
+
+if [ $ODOO_THROUGH_DOMAIN == "False"]: then
+    sudo journalctl -u $OC_USER.service -f
+    exit 0
+fi
+
+echo "Continuing to configuring Nginx to access Odoo through a secured SSL domain name"
 
 # Configuring Nginx to access Odoo through a secured SSL domain name
 # Installing Nginx
@@ -147,7 +161,7 @@ sudo ln -s /etc/nginx/sites-available/$YOURWEBSITE /etc/nginx/sites-enabled/
 
 sudo systemctl restart nginx
 
-sudo certbot certonly --agree-tos --no-eff-email admin@$YOURWEBSITE --webroot -w /var/lib/letsencrypt/ -d $YOURWEBSITE -d www.$YOURWEBSITE
+sudo certbot certonly --agree-tos --no-eff-email --email admin@$YOURWEBSITE --webroot -w /var/lib/letsencrypt/ -d $YOURWEBSITE -d www.$YOURWEBSITE
 
 #######################################################################################################
 #               You see the below message you are all good, if not start debugging!                   #
@@ -267,15 +281,15 @@ EOF
 sudo systemctl restart nginx
 
 # Change the Odoo Configuration File to use proxy mode
-sudo tee /etc/odoo17.conf > /dev/null <<EOF
+sudo tee /etc/$OC_USER.conf > /dev/null <<EOF
 [options]
 ; Specify the password that allows database management:
 admin_passwd = scrpass
 db_host = False
 db_port = False
-db_user = odoo17
+db_user = $OC_USER
 db_password = False
-addons_path = /opt/odoo17/odoo/addons
+addons_path = /opt/$OC_USER/odoo/addons
 ; This is the default port. It is specified here as you will want to set this if you are running Odoo on an alternate port.
 xmlrpc_port = 8069
 ; This is the default longpolling port. Like the xmlrpc_port we are specifying this port for completeness
@@ -287,19 +301,19 @@ workers = 2
 proxy_mode = True
 EOF
 
-# sudo tee /etc/odoo17.conf > /dev/null <<EOF
+# sudo tee /etc/$OC_USER.conf > /dev/null <<EOF
 # [options]
 # ; Specify the password that allows database management:
 # admin_passwd = scrpass
-# db_user = odoo17
+# db_user = $OC_USER
 # db_password = False
-# addons_path = /opt/odoo17/odoo/addons
+# addons_path = /opt/$OC_USER/odoo/addons
 # ; If you plan on setting up nginx it is advised to specify multiple workers in the configuration. If you don’t set this to workers > 1 then you could run into problems when you specify the long polling blocks in the nginx config file.
 # workers = 2
 # proxy_mode = True
 # EOF
 
 
-sudo systemctl restart odoo17
+sudo systemctl restart $OC_USER
 
-sudo journalctl -u odoo17 --no-pager -n 50
+sudo journalctl -u $OC_USER --no-pager -n 50
