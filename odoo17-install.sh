@@ -18,7 +18,7 @@ ODOO_THROUGH_DOMAIN="True"
 # |  Name                 | Type     | Value                            |
 # | --------------------- | -------- | -------------------------------- |
 # | YOURWEBSITE.COM       | A        | `Your VPS IP`                    |
-# | www.YOURWEBSITE.COM   | A        | `Your VPS IP` or YOURWEBSITE.COM |
+# | www.YOURWEBSITE.COM   | CNAME    | `Your VPS IP` or YOURWEBSITE.COM |
 YOURWEBSITE="YOURWEBSITE.COM"
 
 ##########################################################################################################
