@@ -1,9 +1,24 @@
 #!/bin/bash
 
-# Variables
+# This script was specifically tested for odoo community version 17.0 on ubuntu 24.04 server.
+
+
+
+############################################# Variables ##################################################
 OC_USER="odoo17"
+
+# Set this to "False" if you are just installing Odoo 17.0 CE for development purpose
 ODOO_THROUGH_DOMAIN="True"
-YOURWEBSITE="rafdev.xyz"
+
+# Change this to a legit domain you own. Be sure to setup DNS Records on your domain registrar.
+# You should at least have this two in your DNS Records
+# |  Name                 | Type     | Value                            |
+# | --------------------- | -------- | -------------------------------- |
+# | YOURWEBSITE.COM       | A        | `Your VPS IP`                    |
+# | www.YOURWEBSITE.COM   | A        | `Your VPS IP` or YOURWEBSITE.COM |
+YOURWEBSITE="YOURWEBSITE.COM"
+
+##########################################################################################################
 
 # Its better if you update and upgrade your system before running this script, 
 # so that you can make sure you are running the up-to-date kernel version.
