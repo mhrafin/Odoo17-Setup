@@ -106,7 +106,13 @@ sudo systemctl status $OC_USER.service --no-pager
 ###############################################################################################################################
 
 if [ $ODOO_THROUGH_DOMAIN = "False"]; then
-    sudo journalctl -u $OC_USER.service -f
+    echo "########################################################################"
+    echo "Odoo 17.0 CE should be running at : localhost:8069 or YOURVPSIP:8069"
+    echo "Odoo base files are at            : /opt/$OC_USER/odoo"
+    echo "Pyhton venv for odoo is at        : /opt/$OC_USER/odoo-venv"
+    echo "Odoo configuration file is at     : /etc/$OC_USER.conf"
+    echo "Odoo systemd unit is at           : /etc/systemd/system/$OC_USER.service"
+    echo "########################################################################"
     exit 0
 fi
 
@@ -323,3 +329,12 @@ EOF
 sudo systemctl restart $OC_USER
 
 sudo journalctl -u $OC_USER --no-pager -n 50
+
+echo "###########################################################################"
+echo "Odoo 17.0 CE should be running at : $YOURWEBSITE"
+echo "Odoo base files are at            : /opt/$OC_USER/odoo"
+echo "Pyhton venv for odoo is at        : /opt/$OC_USER/odoo-venv"
+echo "Odoo configuration file is at     : /etc/$OC_USER.conf"
+echo "Odoo systemd unit is at           : /etc/systemd/system/$OC_USER.service"
+echo "Your NGINX config is at           : /etc/nginx/sites-available/$YOURWEBSITE"
+echo "###########################################################################"
