@@ -2,7 +2,10 @@
 
 # This script was specifically tested for odoo community version 17.0 on ubuntu 24.04 server.
 
-
+# To run this script (Be sure to update & upgrade your system and edit the variables to your need Before Hand)
+# wget https://raw.githubusercontent.com/mhrafin/Odoo17-Setup/refs/heads/main/odoo17-install.sh
+# sudo chmod +x odoo17-install.sh
+# ./odoo17-install.sh
 
 ############################################# Variables ##################################################
 OC_USER="odoo17"
@@ -315,18 +318,6 @@ workers = 2
 ; dbfilter = [your database]
 proxy_mode = True
 EOF
-
-# sudo tee /etc/$OC_USER.conf > /dev/null <<EOF
-# [options]
-# ; Specify the password that allows database management:
-# admin_passwd = scrpass
-# db_user = $OC_USER
-# db_password = False
-# addons_path = /opt/$OC_USER/odoo/addons
-# ; If you plan on setting up nginx it is advised to specify multiple workers in the configuration. If you don’t set this to workers > 1 then you could run into problems when you specify the long polling blocks in the nginx config file.
-# workers = 2
-# proxy_mode = True
-# EOF
 
 
 sudo systemctl restart $OC_USER
