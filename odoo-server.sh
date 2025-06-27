@@ -87,7 +87,7 @@ sudo systemctl status $OC_USER.service --no-pager
 
 ###############################################################################################################################
 
-if [ $ODOO_THROUGH_DOMAIN = "False"]: then
+if [ $ODOO_THROUGH_DOMAIN = "False"]; then
     sudo journalctl -u $OC_USER.service -f
     exit 0
 fi
