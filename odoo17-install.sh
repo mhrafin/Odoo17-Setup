@@ -55,6 +55,9 @@ sudo -u $OC_USER -H python3 -m venv /opt/$OC_USER/odoo-venv
 sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install wheel
 sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install -r /opt/$OC_USER/odoo/requirements.txt
 
+# Create a folder to store custom third party odoo apps
+sudo -u odoo17 -H mkdir /opt/$OC_USER/custom_addons
+
 # Creating a configuration file for our Odoo installation
 sudo tee /etc/$OC_USER.conf > /dev/null <<EOF
 [options]
@@ -64,7 +67,7 @@ db_host = False
 db_port = False
 db_user = $OC_USER
 db_password = False
-addons_path = /opt/$OC_USER/odoo/addons
+addons_path = /opt/$OC_USER/odoo/addons,/opt/$OC_USER/custom_addons
 ; This is the default port. It is specified here as you will want to set this if you are running Odoo on an alternate port.
 xmlrpc_port = 8069
 ; This is the default longpolling port. Like the xmlrpc_port we are specifying this port for completeness
