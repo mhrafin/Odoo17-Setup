@@ -214,7 +214,7 @@ sudo certbot certonly --agree-tos --no-eff-email --email admin@$YOURWEBSITE --we
 
 
 # Modifying your Nginx configuration to access your Odoo installation with the SSL certificate
-sudo tee /etc/nginx/sites-available/$YOURWEBSITE > /dev/null <<EOF
+sudo tee /etc/nginx/sites-available/odoo_upstreams > /dev/null <<EOF
 # Odoo servers
 upstream odooserver {
     server 127.0.0.1:8069;
@@ -223,7 +223,11 @@ upstream odooserver {
 upstream odoochat {
     server 127.0.0.1:8072;
 }
+EOF
 
+sudo ln -s /etc/nginx/sites-available/odoo_upstreams /etc/nginx/sites-enabled/
+
+sudo tee /etc/nginx/sites-available/$YOURWEBSITE > /dev/null <<EOF
 # HTTP -> HTTPS
 server {
     listen [::]:80;
