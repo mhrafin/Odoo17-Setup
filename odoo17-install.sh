@@ -52,7 +52,7 @@ sudo -u $OC_USER -H git clone https://www.github.com/odoo/odoo --depth 1 --branc
 sudo -u $OC_USER -H python3 -m venv /opt/$OC_USER/odoo-venv
 
 # Install the Required Odoo Python dependencies
-sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install wheel
+sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install wheel, openpyxl
 sudo -u $OC_USER -H /opt/$OC_USER/odoo-venv/bin/pip install -r /opt/$OC_USER/odoo/requirements.txt
 
 # Create a folder to store custom third party odoo apps
