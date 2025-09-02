@@ -216,96 +216,107 @@ sudo certbot certonly --agree-tos --no-eff-email --email admin@$YOURWEBSITE --we
 # Modifying your Nginx configuration to access your Odoo installation with the SSL certificate
 sudo tee /etc/nginx/sites-available/odoo_upstreams > /dev/null <<EOF
 # Odoo servers
-upstream odooserver {
+upstream odoo {
     server 127.0.0.1:8069;
 }
 
 upstream odoochat {
     server 127.0.0.1:8072;
 }
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
 EOF
 
 sudo ln -s /etc/nginx/sites-available/odoo_upstreams /etc/nginx/sites-enabled/
 
 sudo tee /etc/nginx/sites-available/$YOURWEBSITE > /dev/null <<EOF
-# HTTP -> HTTPS
 server {
-    listen [::]:80;
-    listen 80;
-    server_name www.$YOURWEBSITE $YOURWEBSITE;
-    return 301 https://$YOURWEBSITE\$request_uri;
+  listen 80;
+  server_name $YOURWEBSITE;
+  rewrite ^(.*) https://$host$1 permanent;
 }
 
-# WWW -> NON WWW
 server {
-    listen [::]:443 ssl;
-    listen 443 ssl http2;
-    server_name www.$YOURWEBSITE;
+  listen 443 ssl;
+  server_name $YOURWEBSITE;
+  proxy_read_timeout 720s;
+  proxy_connect_timeout 720s;
+  proxy_send_timeout 720s;
 
-    ssl_certificate /etc/letsencrypt/live/$YOURWEBSITE/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$YOURWEBSITE/privkey.pem;
-    ssl_trusted_certificate /etc/letsencrypt/live/$YOURWEBSITE/chain.pem;
-    include snippets/ssl.conf;
-    include snippets/letsencrypt.conf;
+  # SSL parameters
+  ssl_certificate /etc/ssl/nginx/server.crt;
+  ssl_certificate_key /etc/ssl/nginx/server.key;
+  ssl_session_timeout 30m;
+  ssl_protocols TLSv1.2;
+  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+  ssl_prefer_server_ciphers off;
 
-    return 301 https://$YOURWEBSITE\$request_uri;
-}
-server {
-    listen 443 ssl http2;
-    server_name $YOURWEBSITE;
+  # log
+  access_log /var/log/nginx/odoo.access.log;
+  error_log /var/log/nginx/odoo.error.log;
 
-    proxy_read_timeout 720s;
-    proxy_connect_timeout 720s;
-    proxy_send_timeout 720s;
+  # Redirect websocket requests to odoo gevent port
+  location /websocket {
+    proxy_pass http://odoochat;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_set_header X-Forwarded-Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
 
-    # Proxy headers
-    proxy_set_header X-Forwarded-Host \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-    proxy_set_header X-Real-IP \$remote_addr;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+    proxy_cookie_flags session_id samesite=lax secure;  # requires nginx 1.19.8
+  }
 
-    # SSL parameters
-    ssl_certificate /etc/letsencrypt/live/$YOURWEBSITE/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$YOURWEBSITE/privkey.pem;
-    ssl_trusted_certificate /etc/letsencrypt/live/$YOURWEBSITE/chain.pem;
-    include snippets/ssl.conf;
-    include snippets/letsencrypt.conf;
+  # Redirect requests to odoo backend server
+  location / {
+    # Add Headers for odoo proxy mode
+    proxy_set_header X-Forwarded-Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_redirect off;
+    proxy_pass http://odoo;
 
-    # log files
-    access_log /var/log/nginx/odoo.access.log;
-    error_log /var/log/nginx/odoo.error.log;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+    proxy_cookie_flags session_id samesite=lax secure;  # requires nginx 1.19.8
+  }
 
-    # Specifies the maximum accepted body size of a client request,
-    # as indicated by the request header Content-Length.
-    client_max_body_size 200m;
+  # common gzip
+  gzip_types text/css text/scss text/plain text/xml application/xml application/json application/javascript;
+  gzip on;
 
-    # increase proxy buffer to handle some odoo web requests
-    proxy_buffers 16 64k;
-    proxy_buffer_size 128k;
-
-    # Handle longpoll requests
-    location /longpolling {
-        proxy_pass http://odoochat;
-    }
-
-    # Handle / requests
-    location / {
+  location @odoo {
+        # copy-paste the content of the / location block
+        # Add Headers for odoo proxy mode
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
         proxy_redirect off;
-        proxy_pass http://odooserver;
+        proxy_pass http://odoo;
+
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+        proxy_cookie_flags session_id samesite=lax secure;  # requires nginx 1.19.8
+    }
+    
+    # Serve static files right away
+    location ~ ^/[^/]+/static/.+$ {
+        # root and try_files both depend on your addons paths
+        root /opt/$OC_USER;
+        try_files /odoo/addons$uri /custom_addons$uri @odoo;
+        expires 24h;
+        add_header Content-Security-Policy $content_type_csp;
     }
 
-    # Cache static files
-    location ~* /web/static/ {
-        proxy_cache_valid 200 90m;
-        proxy_buffering on;
-        expires 864000;
-        proxy_pass http://odooserver;
+    # Serve attachments
+    location /web/filestore {
+        internal;
+        alias /opt/$OC_USER/.local/share/Odoo/filestore;
     }
-
-    # Gzip
-    gzip_types text/css text/less text/plain text/xml application/xml
-    application/json application/javascript;
-    gzip on;
 }
 EOF
 
