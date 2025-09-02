@@ -229,7 +229,7 @@ map $http_upgrade $connection_upgrade {
 }
 EOF
 
-sudo ln -s /etc/nginx/sites-available/odoo_upstreams /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/odoo_servers /etc/nginx/sites-enabled/
 
 sudo tee /etc/nginx/sites-available/$YOURWEBSITE > /dev/null <<EOF
 server {
