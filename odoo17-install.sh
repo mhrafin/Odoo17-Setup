@@ -179,7 +179,7 @@ EOF
 sudo tee /etc/nginx/sites-available/$YOURWEBSITE > /dev/null <<EOF
 server {
     listen 80;
-    server_name $YOURWEBSITE www.$YOURWEBSITE;
+    server_name $YOURWEBSITE;
     include snippets/letsencrypt.conf;
 }
 EOF
@@ -188,14 +188,14 @@ sudo ln -s /etc/nginx/sites-available/$YOURWEBSITE /etc/nginx/sites-enabled/
 
 sudo systemctl restart nginx
 
-sudo certbot certonly --agree-tos --no-eff-email --email admin@$YOURWEBSITE --webroot -w /var/lib/letsencrypt/ -d $YOURWEBSITE -d www.$YOURWEBSITE
+sudo certbot certonly --agree-tos --no-eff-email --email admin@$YOURWEBSITE --webroot -w /var/lib/letsencrypt/ -d $YOURWEBSITE
 
 #######################################################################################################
 #               You see the below message you are all good, if not start debugging!                   #
 #######################################################################################################
 #                                                                                                     #
 #   Saving debug log to /var/log/letsencrypt/letsencrypt.log                                          #
-#   Requesting a certificate for $YOURWEBSITE and www.$YOURWEBSITE                                    #
+#   Requesting a certificate for $YOURWEBSITE                                                         #
                                                                                                       #
 #   Successfully received certificate.                                                                #
 #   Certificate is saved at: /etc/letsencrypt/live/$YOURWEBSITE/fullchain.pem                         #
