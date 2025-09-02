@@ -206,6 +206,10 @@ map \$http_upgrade \$connection_upgrade {
   default upgrade;
   ''      close;
 }
+map \$sent_http_content_type \$content_type_csp {
+    default "";
+    ~image/ "default-src 'none'";
+}
 EOF
 
 sudo ln -s /etc/nginx/sites-available/odoo_servers /etc/nginx/sites-enabled/
