@@ -152,7 +152,7 @@ EOF
 
 sudo tee /etc/nginx/snippets/ssl.conf > /dev/null <<EOF
 ssl_dhparam /etc/ssl/certs/dhparam.pem;
-ssl_session_timeout 1d;
+ssl_session_timeout 30m;
 ssl_session_cache shared:SSL:50m;
 ssl_session_tickets off;
 ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -251,7 +251,6 @@ server {
   ssl_trusted_certificate /etc/letsencrypt/live/$YOURWEBSITE/chain.pem;
   include snippets/ssl.conf;
   include snippets/letsencrypt.conf;
-  ssl_session_timeout 30m;
   ssl_protocols TLSv1.2;
   ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
   ssl_prefer_server_ciphers off;
