@@ -152,18 +152,6 @@ EOF
 
 sudo tee /etc/nginx/snippets/ssl.conf > /dev/null <<EOF
 ssl_dhparam /etc/ssl/certs/dhparam.pem;
-ssl_session_timeout 30m;
-ssl_session_cache shared:SSL:50m;
-ssl_session_tickets off;
-ssl_protocols TLSv1.2;
-ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-ssl_prefer_server_ciphers off;
-ssl_stapling on;
-ssl_stapling_verify on;
-resolver 8.8.8.8 8.8.4.4 valid=300s;
-resolver_timeout 30s;
-add_header X-Frame-Options SAMEORIGIN;
-add_header X-Content-Type-Options nosniff;
 EOF
 
 # HERE IS WHERE YOU START FOR ADDING DOMAINS TO AN EXISTING INSTANCE
@@ -214,7 +202,7 @@ upstream odoo {
 upstream odoochat {
     server 127.0.0.1:8072;
 }
-map $http_upgrade $connection_upgrade {
+map \$http_upgrade \$connection_upgrade {
   default upgrade;
   ''      close;
 }
@@ -226,7 +214,7 @@ sudo tee /etc/nginx/sites-available/$YOURWEBSITE > /dev/null <<EOF
 server {
   listen 80;
   server_name $YOURWEBSITE;
-  rewrite ^(.*) https://$host$1 permanent;
+  rewrite ^(.*) https://\$host\$1 permanent;
 }
 
 server {
@@ -240,6 +228,10 @@ server {
   ssl_certificate /etc/letsencrypt/live/$YOURWEBSITE/fullchain.pem;
   ssl_certificate_key /etc/letsencrypt/live/$YOURWEBSITE/privkey.pem;
   ssl_trusted_certificate /etc/letsencrypt/live/$YOURWEBSITE/chain.pem;
+  ssl_session_timeout 30m;
+  ssl_protocols TLSv1.2;
+  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+  ssl_prefer_server_ciphers off;
   include snippets/ssl.conf;
   include snippets/letsencrypt.conf;
   
@@ -250,12 +242,12 @@ server {
   # Redirect websocket requests to odoo gevent port
   location /websocket {
     proxy_pass http://odoochat;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection $connection_upgrade;
-    proxy_set_header X-Forwarded-Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection \$connection_upgrade;
+    proxy_set_header X-Forwarded-Host \$http_host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Real-IP \$remote_addr;
 
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
     proxy_cookie_flags session_id samesite=lax secure;  # requires nginx 1.19.8
@@ -264,10 +256,10 @@ server {
   # Redirect requests to odoo backend server
   location / {
     # Add Headers for odoo proxy mode
-    proxy_set_header X-Forwarded-Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-Host \$http_host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Real-IP \$remote_addr;
     proxy_redirect off;
     proxy_pass http://odoo;
 
@@ -282,10 +274,10 @@ server {
   location @odoo {
         # copy-paste the content of the / location block
         # Add Headers for odoo proxy mode
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Host \$http_host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Real-IP \$remote_addr;
         proxy_redirect off;
         proxy_pass http://odoo;
 
@@ -294,12 +286,12 @@ server {
     }
     
     # Serve static files right away
-    location ~ ^/[^/]+/static/.+$ {
+    location ~ ^/[^/]+/static/.+\$ {
         # root and try_files both depend on your addons paths
         root /opt/$OC_USER;
-        try_files /odoo/addons$uri /custom_addons$uri @odoo;
+        try_files /odoo/addons\$uri /custom_addons\$uri @odoo;
         expires 24h;
-        add_header Content-Security-Policy $content_type_csp;
+        add_header Content-Security-Policy \$content_type_csp;
     }
 
     # Serve attachments
