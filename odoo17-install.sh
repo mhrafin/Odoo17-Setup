@@ -243,6 +243,12 @@ server {
   access_log /var/log/nginx/odoo.access.log;
   error_log /var/log/nginx/odoo.error.log;
 
+  # Block database select/manage from outside
+  # location ~* ^/web/database {
+  #     deny all;
+  #     return 404;
+  # }
+
   # Redirect websocket requests to odoo gevent port
   location /websocket {
     proxy_pass http://odoochat;
@@ -264,6 +270,7 @@ server {
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
     proxy_set_header X-Real-IP \$remote_addr;
+    # proxy_set_header X-Odoo-dbfilter ^school;
     proxy_redirect off;
     proxy_pass http://odoo;
 
@@ -282,6 +289,7 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_set_header X-Real-IP \$remote_addr;
+        # proxy_set_header X-Odoo-dbfilter ^school;
         proxy_redirect off;
         proxy_pass http://odoo;
 
